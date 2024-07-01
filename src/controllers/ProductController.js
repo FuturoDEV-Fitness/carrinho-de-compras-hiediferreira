@@ -51,6 +51,39 @@ class ProductController{
             response.status(500).json({mensagem: 'Não foi possível'})
         }
     }
+
+    async listarUm(request, response){
+        try {
+            const id = request.params.id 
+            //recebe o id q vou mandar pela url e armazena em const id
+
+            const produtoEspecifico = await conexao.query(`
+                select pdc.name as produto,
+	            pdc.amount as estoque,
+	            pdc.color as cor,
+	            pdc.voltage as voltagem,
+	            pdc.description as descrição,
+	            pdc.price as preço,
+	            ctg.name as categoria
+	            from products pdc
+	            left join categories ctg on pdc.id_categ = ctg.id_categ
+                where pdc.id_prod = $1`, [id]
+            )
+
+            if(produtoEspecifico.rows.length === 0){
+                return response.status(404).json({
+                    mensagem: 'Não foi encontrado um produto com o id informado!'
+                })
+            }
+
+            response.json(produtoEspecifico.rows[0])
+
+        } catch {
+            response.status(500).json({
+                mensagem: 'Erro ao listar o serviço'
+            })
+        }
+    }
 }
 
 module.exports = new ProductController
